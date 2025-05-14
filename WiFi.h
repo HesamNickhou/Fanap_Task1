@@ -12,9 +12,8 @@
 
 class Wifi {
   private:
-    typedef void (*ConnectionListener) (bool isConnected, const char* reason);          //Callback for connection states
+    typedef void (*ConnectionListener) (bool isConnected);          //Callback for connection states
     typedef void (*DataListener)       (char* command, uint8_t* payload, uint16_t size);//Callback for data received
-    typedef void (*RestartListener)    ();                                              //Callback for Restart
 
     //String chars for different wifi states
     const char* reasons[9] PROGMEM = {
@@ -47,7 +46,6 @@ class Wifi {
 
     ConnectionListener connectionListener;
     DataListener       dataListener;
-    RestartListener    restartListener;
 
     const char* getCause(uint8_t status) {
       switch (status) {
@@ -153,8 +151,7 @@ class Wifi {
     }
 
     /**
-    * @brief writes MAC address in given string variable
-    * @param mac given chars memory address
+    * writes MAC address in given string variable
     */
     void getMAC(char* mac) {
       uint8_t MAC[6];
@@ -164,10 +161,10 @@ class Wifi {
     }
 
     /**
-    * @brief initialization of WiFi helper with given informations
-    * @param ssid name of WiFi modem which should be connect to or Hotspot will be
-    * @param password password of remote Wifi which should be connect to
-    * @param _mode mode of WiFi should be. 1=Hotspot , 2=Client
+    * initialization of WiFi helper with given informations
+    * ssid name of WiFi modem which should be connect to or Hotspot will be
+    * password password of remote Wifi which should be connect to
+    * _mode mode of WiFi should be. 1=Hotspot , 2=Client
     */
     void init(const char* ssid, const char* password, uint8_t _mode) {
       mode = _mode;
@@ -191,26 +188,7 @@ class Wifi {
     }
 
     /**
-    * @brief Start a mDNS service with given type name
-    * Service is run for TCP on port of 5000
-    * @param type name of service
-    */
-    bool mdns(const char* type) {
-      bool success = false;
-      uint8_t MAC[6];
-      char mac[18];
-      WiFi.macAddress(MAC);
-      sprintf(mac, "%02X:%02X:%02X:%02X:%02X:%02X", MAC[0], MAC[1], MAC[2], MAC[3], MAC[4], MAC[5]);
-      if (MDNS.begin(mac))
-        if (MDNS.addService("fanap", "tcp", 5000)) {
-          MDNS.addServiceTxt("fanap", "tcp", "type", type);
-          success = true;
-        }
-      return success;
-    }
-
-    /**
-    * @brief Start of receiving data from WiFi
+    * Start of receiving data from WiFi
     */
     void startServer() {
       server.begin();
@@ -218,9 +196,7 @@ class Wifi {
     }
 
     /**
-    * @brief Sends a data in form of Command.Length.Payload 
-    * @param command part of Command
-    * @param payload part of Payload
+    * Sends a data in form of Command.Length.Payload 
     */
     void send(const char* command, const char* payload) {
       if (initialized && (remote != IPAddress(0,0,0,0) /* means there is at least one contact to send data*/)) {
@@ -242,14 +218,8 @@ class Wifi {
 
     void stop() { client.stop(); }
 
-    /**
-    * @brief Sets an automatic restart after wifi disconnection
-    * @param time minutes wait after wifi disconnection
-    */
-    void setWifiReboot       (uint8_t time)                { wifiReboot = value; }
     void setOnWifiConnection (ConnectionListener listener) { connectionListener = listener; }    
     void setOnDataReceived   (DataListener listener)       { dataListener = listener; }    
-    void setOnRestartListener(RestartListener interface)   { restartListener = interface; }
   
     void loop() {
       if (mode > HOTSPOT)
@@ -257,27 +227,16 @@ class Wifi {
           status = WiFi.status();
           if (status == WL_CONNECTED) {
             //Fires callback for successful connection
-            connectionListener(true, getCause(status));
+            connectionListener(true);
             lastTime = 0;
           }
           
           else if (status != WL_NO_SHIELD) { //WiFi is not connected because of...
-            connectionListener(false, getCause(status));
+            connectionListener(false);
             if (lastTime == 0)
               lastTime = millis(); //Measures time of WiFi disconnection
           }
         }
-
-      /* If there is a time elapsed after WiFi disconnection
-      *  and automatic restart is enabled, the program should
-      * calculate the time and if reached, should fires Restart callback
-      */
-      if (lastTime > 10)
-        if (wifiReboot > 0)
-          if ((millis() - lastTime) > (wifiReboot * 60000)) {
-            restartListener();
-            lastTime = 0;
-          }
       
       //Check every tick is there a connection to get data or not?
       if (client.connected()) {
@@ -294,7 +253,7 @@ class Wifi {
         }
 
         if (!inReading && doStop) {
-          //If not in reading data mode and the sending data is sent completly stop the client to be closed
+          //If not in reading data mode and the data is send completly, stop the client to be closed
           // on other side
           doStop = false;
           client.stop();

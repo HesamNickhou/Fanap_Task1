@@ -1,7 +1,7 @@
 #include "MQTT.h"
 
 /**
-* @brief Defining and pre-intialize the object
+* Defining and pre-intialize the object
 */
 MQTT::MQTT() {
   connectionListener = NULL;  
@@ -11,7 +11,7 @@ MQTT::MQTT() {
 }
 
 /**
-* @brief Initialize the instance, load the certificate data for tls
+* Initialize the instance, load the certificate data for tls
 */
 void MQTT::init() {
   //CA of tls is stored in certificate.ca file previously. It should be load before start the connection
@@ -34,8 +34,8 @@ void MQTT::init() {
 }
 
 /**
-* @brief Print the connection failur cause in Serial output for debugging purpose
-* @param state Is received by the PubSubClient's feedback
+* Print the connection failur cause in Serial output for debugging purpose
+* state Is received by the PubSubClient's feedback
 */
 void MQTT::printCause(int state) {
   if (state != 0)
@@ -56,26 +56,26 @@ void MQTT::printCause(int state) {
 }
 
 /**
-* @brief Sets the MQTT data received callback
-* @param callBack (char* topic, uint8_t* payload, uint16_t length)
+* Sets the MQTT data received callback
+* callBack (char* topic, uint8_t* payload, uint16_t length)
 */
 void MQTT::setCallBack(DataCallBack callBack) {
   client.setCallback(callBack);
 }
 
 /**
-* @brief Internal connect function to establish MQTT connection
+* Internal connect function to establish MQTT connection
 */
 void MQTT::_Connect() {
   startMQTT = true;
   if (client.connect(mac, id, password, willTopic, 0, false, mac, false)) {
     /*
     Format of transfering topics is: 
-    From Device to Server:      Fanap/<UserID>/<Project-Module name>/<MAC of connected device>/App
-    From Application to Device: Fanap/<UserID>/<Project-Module name>/<MAC of connected device>/Gateway
+    From Device to Server:      Fanap/<UserID>/<Project-Module name>/<MAC>/App
+    From Application to Device: Fanap/<UserID>/<Project-Module name>/<MAC>/Gateway
 
     Device subscribes to: 
-      Fanap/<User ID>/WhoIs       //This is for finding devices under an user
+      Fanap/<User ID>/WhoIs       //This is for finding devices under an user modules
       Fanap/Server/+              //This is for broadcasting a message to all devices
     */
 
@@ -100,18 +100,15 @@ void MQTT::_Connect() {
     wifiClient.lastError(because, 1024);
     Serial.printf("\tWifi Client Secure is %s because %s\n", wifiClient.connected() ? "Connected" : "Disconnected", because);
   }
-
-  //Set the time stamp to calculate the connection time
-  lastTime = millis();
 }
 
 /**
-* @brief Connects to Mosquitto server
-* @param server   URL/IP address of server
-* @param port     MQTT server's port (8082 or 8083)
-* @param mac      MAC address of connecting device
-* @param id       User ID (Gmail or Mobile no)
-* @param password password to connect to the MQTT server
+* Connects to Mosquitto server
+* server   URL/IP address of server
+* port     MQTT server's port (8082 or 8083)
+* mac      MAC address of connecting device
+* id       User ID (Gmail or Mobile no)
+* password password to connect to the MQTT server
 */
 void MQTT::Connect(const char* server, uint16_t port, const char* mac, const char* id, const char* password) {
   client.setServer(server, port);
@@ -120,36 +117,29 @@ void MQTT::Connect(const char* server, uint16_t port, const char* mac, const cha
   strcpy(this->password, password);
 
   //Will topic to notify server and user that this device is turned offline
-  sprintf(willTopic, "Fanap/%s/IamGone", this->gmail);
+  sprintf(willTopic, "Fanap/%s/IamGone", this->id);
   _Connect();
 }
 
 /**
-* @brief Sends data via MQTT 
-* @param command Part of Command
-* @param data    Part of payload
+* Sends data via MQTT 
+* command Part of Command
+* data    Part of payload
 */
 void MQTT::send(const char* command, const char* data) {
   char topic[1024];
-
-  if (strcmp(command, "Iam") == 0) // If this device is telling I am online
-    sprintf(topic, "Fanap/%s/Iam", gmail);
-
-  else //Send for example: Fanap/nickhou.hesam@gmail.com/Task1/a1:b2:c3:d4:e5:f6/SetDuration
-    sprintf(topic, "%s/%s", topicSend, command);
+  sprintf(topic, "%s/%s", topicSend, command);
   client.publish(topic, data);
 }
 
 /**
-* @brief Sets MQTT connection states callback
-* @param (bool isConnected)
+* Sets MQTT connection states callback
+* (bool isConnected)
 */
-void MQTT::setOnMQTTConnection(ConnectionListener listener) {
-  connectionListener = listener;
-}
+void MQTT::setOnMQTTConnection(ConnectionListener listener) {  connectionListener = listener; }
 
 /**
-* @brief Do mqtt jobs and fire evens
+* Do mqtt jobs and fire evens
 */
 void MQTT::loop() {
   if (startMQTT) {
@@ -162,16 +152,5 @@ void MQTT::loop() {
       connectionListener(preConnect);
       printCause(preState);
     }
-    
-    if (!connected)
-    
-      //If after 15 seconds the connections is not established then
-      //connect via InSecure door, it's for keeping connection in devices in SSL key changing issues
-      //It's a hidden hole!
-      if (millis() - lastTime >= 15000) { 
-        lastTime = millis();
-        wifiClient.setInsecure();
-        _Connect();
-      }
   }
 }

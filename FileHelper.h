@@ -4,15 +4,12 @@
 #include <Arduino.h>
 #include "SPIFFS.h"
 
-class myFile {
+class FileHelper {
   public:
-    myFile() {}
+    FileHelper() {}
     
     /**
-    * @brief Given file name and buffer, reads data untill reached given size
-    * @param fileName Name of file to be read
-    * @param buffer Memory space to read data into
-    * @param size Count of bytes to be read
+    * Read from (fileName) into (buffer) in amount of (size) bytes
     */
     bool fRead(const char* fileName, char* buffer, uint16_t size) {
       uint16_t counter = 0;
@@ -34,9 +31,7 @@ class myFile {
     }
     
     /**
-    * @brief Writes data into the given file name
-    * @param fileName Name of file which should be write into
-    * @param data Buffer of data should be write into the file
+    * Writes data from (data) into the (fileName)
     */
     void fWrite(const char* fileName, const char* data) {
       File file = SPIFFS.open(fileName, FILE_WRITE);
@@ -45,8 +40,7 @@ class myFile {
     }
     
     /**
-    * @brief Deletes a file
-    * @param fileName Name of file
+    * Deletes a file
     */
     void fDelete(const char* fileName) {
       SPIFFS.remove(fileName);

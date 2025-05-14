@@ -14,7 +14,7 @@ class Button {
   public:
 
     /**
-    * @brief Initialization class
+    * Initialize class
     */
     Button() {
       touchListener = NULL;
@@ -23,9 +23,7 @@ class Button {
     }
 
     /**
-    * @brief Initialization class with arguments
-    * @param active Sets the Active-Low or Active-High mode
-    * @param pin GPIO pin number for push button
+    * Initialization class with arguments
     */    
     Button(uint8_t active, uint8_t pin) {
       pressValue = active; //ActiveLow or ActiveHigh is determined
@@ -34,7 +32,7 @@ class Button {
     }
 
     /**
-    * @brief start of object
+    * start of object
     */
     void init() {
       lastTime         = 0; // variables to check debounce
@@ -43,13 +41,11 @@ class Button {
       if (pressValue == LOW)
         pinMode(pin, INPUT_PULLUP); //Needs to be pulled up when active is LOW
 
-      lastRead = digitalRead(pin);
+      lastReading = digitalRead(pin);
     }
 
     /**
-    * @brief Set Button instance parameters
-    * @param active Push button active mode, HIGH or LOW?
-    * @param pin GPIO pin number of push button
+    * Set Button instance parameters
     */
     void setParameters(uint8_t active, uint8_t pin) {
       pressValue = active;
@@ -58,15 +54,12 @@ class Button {
     }
 
     /**
-    * @brief Sets callback for push button's states
-    * @param listener function to be fired
+    * Sets callback for push button's states
     */
-    void setOnTouchListener(TouchListener listener) {
-      touchListener = listener;
-    }
+    void setOnTouchListener(TouchListener listener) {  touchListener = listener;    }
 
     /**
-    * @brief Handles the push button jobs and event
+    * Handles the push button jobs and event
     */
     void loop() {
       uint8_t newReading = digitalRead(pin); // Check if the push button's state is changed or not

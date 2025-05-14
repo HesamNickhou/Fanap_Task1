@@ -8,7 +8,7 @@
 
 class Display {
   private:
-    Adafruit_SSD1306 display(4);
+    Adafruit_SSD1306 display;
     
 
   public:
@@ -16,7 +16,7 @@ class Display {
     void dim(bool value) {      display.dim(value);                           }
     
     /**
-    * @brief show the humidity and temperature on the OLED display
+    * show the humidity and temperature on the OLED display
     */
     void showInformation(uint8_t moisture, float temperature) {
       display.clearDisplay();
@@ -26,6 +26,6 @@ class Display {
       display.display();
       display.dim(false);
     }
-}
+};
 
 #endif

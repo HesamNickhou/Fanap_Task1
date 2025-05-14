@@ -22,7 +22,6 @@ class MQTT {
              ca[2048], 
       willTopic[60];
 
-    uint32_t lastTime, networkConnecting;
     bool startMQTT, preConnect;
     int preState;
     void _Connect();
@@ -31,7 +30,7 @@ class MQTT {
     MQTT();
     void init();
     void setCallBack(DataCallBack callBack);
-    void Connect(const char* server, uint16_t port, const char* mac, const char* gmail, const char* password);
+    void Connect(const char* server, uint16_t port, const char* mac, const char* id, const char* password);
     void send(const char* command, const char* data);
     void setOnMQTTConnection(ConnectionListener listener);
     void loop();

@@ -2,7 +2,7 @@
 #define DATATRANSFORM_h
 #include <Arduino.h>
 
-class DataTransform {
+class TaskDataTransformer {
   private:
     typedef void (* DataReceived) (char* command, char* payload);
     char command[96], payload[4000], name[10];
@@ -13,7 +13,7 @@ class DataTransform {
     QueueHandle_t sender, receiver;
     DataReceived listener;
   public:
-    DataTransform();
+    TaskDataTransformer();
     void setName(const char* taskName);
     void setSendQueue(QueueHandle_t queue);
     void setReceiveQueue(QueueHandle_t queue);

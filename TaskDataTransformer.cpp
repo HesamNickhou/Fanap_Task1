@@ -1,6 +1,6 @@
-#include "DataTransform.h"
+#include "TaskDataTransformer.h"
 
-DataTransform::DataTransform() {
+TaskDataTransformer::TaskDataTransformer() {
   step     = 1;
   counter  = 0;
   element  = NULL;
@@ -10,21 +10,19 @@ DataTransform::DataTransform() {
 }
 
 /*
-There are two queues, one for sending and another one for receiving.
+There are two queues, for sending and receiving.
 In therefore, a name is required to distinguish the transformers from each other
-A callback is for notifying the tasks for incoming data
+Callback is to notify the tasks for incoming data
 */
-void DataTransform::setReceiveQueue(QueueHandle_t queue)    { this->receiver = queue; }
-void DataTransform::setSendQueue(QueueHandle_t queue)       { this->sender   = queue; }
-void DataTransform::setDataListener(DataReceived interface) { this->listener = interface; }
-void DataTransform::setName(const char* taskName)           { strcpy(name, taskName); }
+void TaskDataTransformer::setReceiveQueue(QueueHandle_t queue)    { this->receiver = queue; }
+void TaskDataTransformer::setSendQueue(QueueHandle_t queue)       { this->sender   = queue; }
+void TaskDataTransformer::setDataListener(DataReceived interface) { this->listener = interface; }
+void TaskDataTransformer::setName(const char* taskName)           { strcpy(name, taskName); }
 
 /**
-* @brief Sends data with unlimited data
-* @param cmd Part of Command
-* @param pld Part of Payload
+* Sends data with unlimited size
 */
-void DataTransform::sendData(const char* cmd, const char* pld) {
+void TaskDataTransformer::sendData(const char* cmd, const char* pld) {
   
   //If debug flag is true then shows the transferring data in Serial output for debugging
   if (debug)
@@ -49,12 +47,9 @@ void DataTransform::sendData(const char* cmd, const char* pld) {
 }
 
 /**
-* @brief Sends data in given size
-* @param cmd Part of Command
-* @param pld Part of Payload
-* @param size Size of data which should be send
+* Sends data in given size
 */
-void DataTransform::sendData(const char* cmd, const char* pld, uint16_t size) {
+void TaskDataTransformer::sendData(const char* cmd, const char* pld, uint16_t size) {
   
   //If debug flag is True then shows the transferring data in Serial output for debugging
   if (debug)
@@ -79,9 +74,9 @@ void DataTransform::sendData(const char* cmd, const char* pld, uint16_t size) {
 }
 
 /**
-* @brief Receive data and fires the callback
+* Receive data and fires the callback
 */
-void DataTransform::loop() {
+void TaskDataTransformer::loop() {
 
   //No delay to receive data. It should be non-blocking loop
   if (xQueueReceive(receiver, &element, 0)) {
