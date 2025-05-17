@@ -8,7 +8,7 @@ void mainTask(void *parameter) {
   app.Initialize();
   while (true) {
     app.Loop();
-    vTaskDelay(1);
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
   vTaskDelete(NULL);
 }
@@ -17,7 +17,7 @@ void connectionTask(void *parameter) {
   ConnectionTask app(receiveQueue, sendQueue);
   while (true) {
     app.loop();
-    vTaskDelay(1);
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
   vTaskDelete(NULL);
 }
